@@ -1,0 +1,113 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stocks</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="stocks.html">Stocks</a></li>
+      <li><a href="dogs.html">Dogs</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>Stock Lookup</h1>
+    <input type="text" id="ticker" placeholder="Enter stock symbol (e.g., AAPL)" />
+    <select id="days">
+      <option value="30">30 Days</option>
+      <option value="60">60 Days</option>
+      <option value="90">90 Days</option>
+    </select>
+    <button class="custom-button" onclick="loadStock()">Show Chart</button>
+    <canvas id="stockChart"></canvas>
+
+    <h2>Top 5 Reddit Stocks</h2>
+    <table id="redditTable">
+      <thead>
+        <tr><th>Ticker</th><th>Comments</th><th>Sentiment</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <section id="audio-controls">
+    <h2>Voice Commands</h2>
+    <p>"Lookup [stock]", "Hello", "Change the color to red", etc.</p>
+    <button onclick="startAudio()">Turn On Audio</button>
+    <button onclick="stopAudio()">Turn Off Audio</button>
+  </section>
+
+  <script>
+    const key = 'YOUR_POLYGON_API_KEY';
+
+    function loadStock(symbol = null) {
+      const ticker = symbol || document.getElementById("ticker").value.toUpperCase();
+      const days = document.getElementById("days").value;
+      const end = Math.floor(Date.now() / 1000);
+      const start = end - days * 86400;
+
+      fetch(`https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${start}/${end}?apiKey=${key}`)
+        .then(res => res.json())
+        .then(data => {
+          const labels = data.results.map(r => new Date(r.t).toLocaleDateString());
+          const values = data.results.map(r => r.c);
+
+          new Chart(document.getElementById("stockChart"), {
+            type: "line",
+            data: {
+              labels,
+              datasets: [{ label: `${ticker} Closing Prices`, data: values }],
+            },
+          });
+        });
+    }
+
+    fetch("https://tradestie.com/api/v1/apps/reddit?date=2022-04-03")
+      .then(res => res.json())
+      .then(data => {
+        const top5 = data.slice(0, 5);
+        const tbody = document.querySelector("#redditTable tbody");
+        top5.forEach(stock => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td><a href="https://finance.yahoo.com/quote/${stock.ticker}" target="_blank">${stock.ticker}</a></td>
+            <td>${stock.no_of_comments}</td>
+            <td>${stock.sentiment} ${stock.sentiment === "Bullish" ? "🐂" : "🐻"}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
+
+    function startAudio() {
+      if (annyang) {
+        const commands = {
+          "lookup *stock": stock => {
+            document.getElementById("ticker").value = stock.toUpperCase();
+            loadStock(stock.toUpperCase());
+          },
+          "hello": () => alert("Hello World"),
+          "change the color to *color": color => document.body.style.backgroundColor = color,
+          "navigate to *page": page => {
+            page = page.toLowerCase();
+            if (["home", "stocks", "dogs"].includes(page)) {
+              window.location.href = `${page}.html`;
+            }
+          },
+        };
+        annyang.addCommands(commands);
+        annyang.start();
+      }
+    }
+
+    function stopAudio() {
+      if (annyang) annyang.abort();
+    }
+  </script>
+</body>
+</html>
