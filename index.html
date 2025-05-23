@@ -1,0 +1,62 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home - Class Activities</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="stocks.html">Stocks</a></li>
+      <li><a href="dogs.html">Dogs</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>Welcome!</h1>
+    <button class="custom-button" onclick="location.href='stocks.html'">Stocks</button>
+    <button class="custom-button" onclick="location.href='dogs.html'">Dogs</button>
+    <div id="quote"></div>
+  </main>
+
+  <section id="audio-controls">
+    <h2>Voice Commands</h2>
+    <p>"Hello", "Change the color to red/blue/etc.", "Navigate to home/stocks/dogs"</p>
+    <button onclick="startAudio()">Turn On Audio</button>
+    <button onclick="stopAudio()">Turn Off Audio</button>
+  </section>
+
+  <script>
+    fetch("https://api.quotable.io/random")
+      .then((res) => res.json())
+      .then((data) => {
+        document.getElementById("quote").innerText = data.content;
+      });
+
+    function startAudio() {
+      if (annyang) {
+        const commands = {
+          "hello": () => alert("Hello World"),
+          "change the color to *color": (color) =>
+            document.body.style.backgroundColor = color,
+          "navigate to *page": (page) => {
+            page = page.toLowerCase();
+            if (["home", "stocks", "dogs"].includes(page)) {
+              window.location.href = `${page}.html`;
+            }
+          },
+        };
+        annyang.addCommands(commands);
+        annyang.start();
+      }
+    }
+
+    function stopAudio() {
+      if (annyang) annyang.abort();
+    }
+  </script>
+</body>
+</html>

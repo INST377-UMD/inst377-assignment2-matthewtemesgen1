@@ -1,0 +1,104 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dogs</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="stocks.html">Stocks</a></li>
+      <li><a href="dogs.html">Dogs</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>Dogs Gallery</h1>
+    <div id="carousel"></div>
+    <div id="breed-buttons"></div>
+    <div id="breed-info" style="display: none;"></div>
+  </main>
+
+  <section id="audio-controls">
+    <h2>Voice Commands</h2>
+    <p>"Load Dog Breed [name]", "Hello", "Change the color to red", etc.</p>
+    <button onclick="startAudio()">Turn On Audio</button>
+    <button onclick="stopAudio()">Turn Off Audio</button>
+  </section>
+
+  <script>
+    fetch("https://dog.ceo/api/breeds/image/random/10")
+      .then(res => res.json())
+      .then(data => {
+        const carousel = document.getElementById("carousel");
+        data.message.forEach(url => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.classList.add("dog-pic");
+          carousel.appendChild(img);
+        });
+      });
+
+    fetch("https://api.thedogapi.com/v1/breeds")
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById("breed-buttons");
+        data.forEach(breed => {
+          const btn = document.createElement("button");
+          btn.className = "custom-button";
+          btn.innerText = breed.name;
+          btn.onclick = () => showBreed(breed);
+          container.appendChild(btn);
+        });
+
+        function showBreed(breed) {
+          const info = document.getElementById("breed-info");
+          info.innerHTML = `
+            <h3>${breed.name}</h3>
+            <p>${breed.temperament}</p>
+            <p>Lifespan: ${breed.life_span}</p>
+          `;
+          info.style.display = "block";
+        }
+
+        window.breedData = data;
+      });
+
+    function startAudio() {
+      if (annyang) {
+        const commands = {
+          "load dog breed *name": name => {
+            const breed = window.breedData.find(b => b.name.toLowerCase() === name.toLowerCase());
+            if (breed) {
+              const info = document.getElementById("breed-info");
+              info.innerHTML = `
+                <h3>${breed.name}</h3>
+                <p>${breed.temperament}</p>
+                <p>Lifespan: ${breed.life_span}</p>
+              `;
+              info.style.display = "block";
+            }
+          },
+          "hello": () => alert("Hello World"),
+          "change the color to *color": color => document.body.style.backgroundColor = color,
+          "navigate to *page": page => {
+            page = page.toLowerCase();
+            if (["home", "stocks", "dogs"].includes(page)) {
+              window.location.href = `${page}.html`;
+            }
+          },
+        };
+        annyang.addCommands(commands);
+        annyang.start();
+      }
+    }
+
+    function stopAudio() {
+      if (annyang) annyang.abort();
+    }
+  </script>
+</body>
+</html>

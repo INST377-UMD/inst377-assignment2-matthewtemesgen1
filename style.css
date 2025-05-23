@@ -1,0 +1,54 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+  }
+  
+  nav ul {
+    list-style-type: none;
+    padding: 0;
+    background-color: #333;
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  nav li {
+    padding: 14px;
+  }
+  
+  nav a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  nav li:hover {
+    background-color: #555;
+  }
+  
+  .custom-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    margin: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  #carousel img {
+    width: 200px;
+    height: auto;
+    margin: 10px;
+  }
+  
+  #redditTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  #redditTable th, #redditTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
